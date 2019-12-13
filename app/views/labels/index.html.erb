@@ -1,0 +1,37 @@
+<h1>Labels</h1>
+
+<table>
+  <thead>
+    <tr>
+      <th colspan="2"></th>
+      <th colspan="4">Label</th>
+    </tr>
+    <tr>
+      <th>Tracking Number</th>
+      <th>Carrier</th>
+      <th>Length</th>
+      <th>Width</th>
+      <th>Height</th>
+      <th>Weight</th>
+    </tr>
+  </thead>
+
+  <tbody>
+    <% if @labels.length > 0 %>
+      <% @labels.each do |label| %>
+        <tr>
+          <td><%= label["tracking_number"] %></td>
+          <td><%= label["carrier"] %></td>
+          <td align="right"><%= label.parcel.length %> <%= label.parcel.distance_unit.downcase %></td>
+          <td align="right"><%= label.parcel.width %> <%= label.parcel.distance_unit.downcase %></td>
+          <td align="right"><%= label.parcel.height %> <%= label.parcel.distance_unit.downcase %></td>
+          <td align="right"><%= label.parcel.weight %> <%= label.parcel.mass_unit.downcase %></td>
+        </tr>
+      <% end %>
+    <% else %>
+      <td>
+        <td colspan="6">No records found!</td>
+      </td>
+    <% end %>
+  </tbody>
+</table>
