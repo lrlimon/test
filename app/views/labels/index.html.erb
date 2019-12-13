@@ -15,6 +15,7 @@
       <th>Weight</th>
       <th>Vol.Weight</th>
       <th>Tot.Weight</th>
+      <th>Fedex Weight</th>
     </tr>
   </thead>
 
@@ -34,6 +35,7 @@
           <td align="right"><%= label.parcel.weight_rounded %> <%= mass_um %></td>
           <td align="right"><%= label.parcel.volumetric_weight_rounded %> <%= mass_um %></td>
           <td align="right"><%= label.parcel.total_weight %> <%= mass_um %></td>
+          <td align="right"><%= label.parcel.fedex["weight"] %> <%= mass_um %></td>
         </tr>
       <% end %>
     <% else %>

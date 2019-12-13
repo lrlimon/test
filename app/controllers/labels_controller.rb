@@ -16,6 +16,11 @@ class LabelsController < ApplicationController
   def get_labels(source = nil)
     source = "data/labels.json" if source == nil
     labels = File.file?(source) ? JSON.parse(File.read(source), object_class: OpenStruct) : []
+    fedex = Fedex::Shipment.new(:key            => 'O21wEWKhdDn2SYyb',
+                                :password       => 'db0SYxXWWh0bgRSN7Ikg9Vunz',
+                                :account_number => '510087780',
+                                :meter          => '119009727',
+                                :mode           => 'test')
 
     # Apply changes on data labels
     labels.each do |label|
@@ -50,6 +55,25 @@ class LabelsController < ApplicationController
       # Calculate total weight
       label.parcel["total_weight"] = label.parcel["weight_rounded"] > label.parcel["volumetric_weight_rounded"] ? label.parcel["weight_rounded"]
                                                                                                                 : label.parcel["volumetric_weight_rounded"]
+
+      # ----------
+      # Get Fedex info
+      result = fedex.track(:tracking_number => label["tracking_number"])
+      label.parcel["fedex"] = {}
+
+      if result != nil
+        track = result.first
+
+        label.parcel["fedex"] = {}
+        label.parcel["fedex"]["weight"] = track.details[:package_weight][:value].to_f
+        label.parcel["fedex"]["units"] = track.details[:package_weight][:units].downcase
+
+        # Converts values if not "kg"
+        if label.parcel["fedex"]["units"] != "kg"
+          label.parcel["fedex"]["weight"] *= get_factor(label.parcel["fedex"]["units"])
+          label.parcel["fedex"]["units"] = "kg"
+        end
+      end
     end
 
     return labels
