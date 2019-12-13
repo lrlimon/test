@@ -4,7 +4,7 @@
   <thead>
     <tr>
       <th colspan="2"></th>
-      <th colspan="4">Label</th>
+      <th colspan="5">Label</th>
     </tr>
     <tr>
       <th>Tracking Number</th>
@@ -13,6 +13,8 @@
       <th>Width</th>
       <th>Height</th>
       <th>Weight</th>
+      <th>Vol.Weight</th>
+      <th>Tot.Weight</th>
     </tr>
   </thead>
 
@@ -22,10 +24,16 @@
         <tr>
           <td><%= label["tracking_number"] %></td>
           <td><%= label["carrier"] %></td>
-          <td align="right"><%= label.parcel.length %> <%= label.parcel.distance_unit.downcase %></td>
-          <td align="right"><%= label.parcel.width %> <%= label.parcel.distance_unit.downcase %></td>
-          <td align="right"><%= label.parcel.height %> <%= label.parcel.distance_unit.downcase %></td>
-          <td align="right"><%= label.parcel.weight %> <%= label.parcel.mass_unit.downcase %></td>
+
+          <% dist_um = label.parcel.distance_unit %>
+          <% mass_um = label.parcel.mass_unit %>
+
+          <td align="right"><%= label.parcel.length %> <%= dist_um %></td>
+          <td align="right"><%= label.parcel.width %> <%= dist_um %></td>
+          <td align="right"><%= label.parcel.height %> <%= dist_um %></td>
+          <td align="right"><%= label.parcel.weight_rounded %> <%= mass_um %></td>
+          <td align="right"><%= label.parcel.volumetric_weight_rounded %> <%= mass_um %></td>
+          <td align="right"><%= label.parcel.total_weight %> <%= mass_um %></td>
         </tr>
       <% end %>
     <% else %>
