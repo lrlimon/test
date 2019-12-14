@@ -15,9 +15,14 @@ class LabelsController < ApplicationController
     end
   end
 
-  def get_labels(source = nil)
-    source = "data/labels.json" if source == nil
-    labels = File.file?(source) ? JSON.parse(File.read(source), object_class: OpenStruct) : []
+  def load_labels(only_errors = "false")
+    if only_errors == "false"
+      source = "data/labels.json"
+      labels = File.file?(source) ? JSON.parse(File.read(source), object_class: OpenStruct) : []
+    else
+      labels = @@labels
+    end
+
     fedex = Fedex::Shipment.new(:key            => 'O21wEWKhdDn2SYyb',
                                 :password       => 'db0SYxXWWh0bgRSN7Ikg9Vunz',
                                 :account_number => '510087780',
@@ -26,75 +31,79 @@ class LabelsController < ApplicationController
 
     # Apply changes on data labels
     labels.each do |label|
-      # Distance units and values
-      label.parcel["distance_unit"].downcase!
+      if only_errors == "false"
+        # Distance units and values
+        label.parcel["distance_unit"].downcase!
 
-      # Converts values if not "cm"
-      if label.parcel["distance_unit"] != "cm"
-        factor = get_factor(label.parcel["distance_unit"])
+        # Converts values if not "cm"
+        if label.parcel["distance_unit"] != "cm"
+          factor = get_factor(label.parcel["distance_unit"])
 
-        label.parcel["length"] *= factor
-        label.parcel["width"] *= factor
-        label.parcel["height"] *= factor
-        label.parcel["distance_unit"] = "cm"
+          label.parcel["length"] *= factor
+          label.parcel["width"] *= factor
+          label.parcel["height"] *= factor
+          label.parcel["distance_unit"] = "cm"
+        end
+
+        # Gets volumetric weight
+        label.parcel["volumetric_weight"] = label.parcel["length"] * label.parcel["width"] * label.parcel["height"] / 5000.0
+        label.parcel["volumetric_weight_rounded"] = label.parcel["volumetric_weight"].ceil.to_f
+
+        # Mass units and values
+        label.parcel["mass_unit"].downcase!
+
+        # Converts values if not "kg"
+        if label.parcel["mass_unit"] != "kg"
+          label.parcel["weight"] *= get_factor(label.parcel["mass_unit"])
+          label.parcel["mass_unit"] = "kg"
+        end
+
+        label.parcel["weight_rounded"] = label.parcel["weight"].ceil.to_f
+
+        # Calculate total weight
+        label.parcel["total_weight"] = label.parcel["weight_rounded"] > label.parcel["volumetric_weight_rounded"] ? label.parcel["weight_rounded"]
+                                                                                                                  : label.parcel["volumetric_weight_rounded"]
       end
 
-      # Gets volumetric weight
-      label.parcel["volumetric_weight"] = label.parcel["length"] * label.parcel["width"] * label.parcel["height"] / 5000.0
-      label.parcel["volumetric_weight_rounded"] = label.parcel["volumetric_weight"].ceil.to_f
+      if only_errors == "false" || (only_errors == "true" && label.parcel["fedex"]["error"] != "")
+        # ----------
+        # Get Fedex info
+        label.parcel["fedex"] = {}
 
-      # Mass units and values
-      label.parcel["mass_unit"].downcase!
-
-      # Converts values if not "kg"
-      if label.parcel["mass_unit"] != "kg"
-        label.parcel["weight"] *= get_factor(label.parcel["mass_unit"])
-        label.parcel["mass_unit"] = "kg"
-      end
-
-      label.parcel["weight_rounded"] = label.parcel["weight"].ceil.to_f
-
-      # Calculate total weight
-      label.parcel["total_weight"] = label.parcel["weight_rounded"] > label.parcel["volumetric_weight_rounded"] ? label.parcel["weight_rounded"]
-                                                                                                                : label.parcel["volumetric_weight_rounded"]
-
-      # ----------
-      # Get Fedex info
-      label.parcel["fedex"] = {}
-
-      begin
-        result = fedex.track(:tracking_number => label["tracking_number"])
-
-      rescue StandardError => e
-        puts e.message + " (on getting record for 'tracking number' = #{label["tracking_number"]})"
-
-        label.parcel["fedex"]["error"] = e.message
-
-      else
         begin
-          track = result.first
+          result = fedex.track(:tracking_number => label["tracking_number"])
 
         rescue StandardError => e
-          puts e.message + " (on getting record info for 'tracking number' = #{label["tracking_number"]})"
+          puts e.message + " (on getting record for 'tracking number' = #{label["tracking_number"]})"
 
           label.parcel["fedex"]["error"] = e.message
 
         else
-          label.parcel["fedex"]["weight"] = track.details[:package_weight][:value].to_f
-          label.parcel["fedex"]["units"] = track.details[:package_weight][:units].downcase
+          begin
+            track = result.first
 
-          # Converts values if not "kg"
-          if label.parcel["fedex"]["units"] != "kg"
-            label.parcel["fedex"]["weight"] *= get_factor(label.parcel["fedex"]["units"])
-            label.parcel["fedex"]["units"] = "kg"
+          rescue StandardError => e
+            puts e.message + " (on getting record info for 'tracking number' = #{label["tracking_number"]})"
+
+            label.parcel["fedex"]["error"] = e.message
+
+          else
+            label.parcel["fedex"]["weight"] = track.details[:package_weight][:value].to_f
+            label.parcel["fedex"]["units"] = track.details[:package_weight][:units].downcase
+
+            # Converts values if not "kg"
+            if label.parcel["fedex"]["units"] != "kg"
+              label.parcel["fedex"]["weight"] *= get_factor(label.parcel["fedex"]["units"])
+              label.parcel["fedex"]["units"] = "kg"
+            end
+
+            label.parcel["fedex"]["weight"] = label.parcel["fedex"]["weight"].ceil.to_f
+            label.parcel["fedex"]["error"] = ""
           end
-
-          label.parcel["fedex"]["weight"] = label.parcel["fedex"]["weight"].ceil.to_f
-          label.parcel["fedex"]["error"] = ""
         end
-      end
 
-      puts label.parcel["fedex"]
+        puts label.parcel["fedex"]
+      end
     end
 
     return labels
@@ -102,7 +111,12 @@ class LabelsController < ApplicationController
 
   def index
     reload = params.key?(:reload) ? params[:reload] : "true"
-    @@labels = get_labels if reload == "true"
+
+    if reload == "true"
+      only_errors = params.key?(:only_errors) ? params[:only_errors] : "false"
+      @@labels = load_labels(only_errors)
+    end
+
     @labels = @@labels
   end
 end

@@ -55,4 +55,5 @@
   </tbody>
 </table>
 
-<%= link_to "Reload", labels_path(:reload => true) %>
+<%= link_to "Reload all", labels_path(:reload => true) %>
+<%= link_to "Reload only with error", labels_path(:reload => true, :only_errors => true) %>
