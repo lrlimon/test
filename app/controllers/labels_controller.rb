@@ -18,7 +18,7 @@ class LabelsController < ApplicationController
     if only_errors == "false"
       source = "data/labels.json"
       labels = File.file?(source) ? JSON.parse(File.read(source), object_class: OpenStruct) : []
-      
+
     else
       labels = @@labels
     end
@@ -60,14 +60,16 @@ class LabelsController < ApplicationController
         # Calculate total weight
         label.parcel["total_weight"] = label.parcel["weight"] > label.parcel["volumetric_weight"] ? label.parcel["weight"]
                                                                                                   : label.parcel["volumetric_weight"]
+        label.parcel["total_weight"] = label.parcel["total_weight"].ceil
       end
 
       if only_errors == "false" || (only_errors == "true" && label.parcel["fedex"]["error"] != "")
         # ----------
         # Get Fedex info
         label.parcel["fedex"] = {}
-        label.parcel["overweight"] = nil
-        label.parcel["overweight_rounded"] = nil
+        label.parcel["message"] = ""
+        label.parcel["overweight"] = 0
+        label.parcel["overweight_rounded"] = 0
 
         begin
           result = fedex.track(:tracking_number => label["tracking_number"])
