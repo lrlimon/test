@@ -4,7 +4,7 @@
   <thead>
     <tr>
       <th colspan="2"></th>
-      <th colspan="8">Label</th>
+      <th colspan="10">Label</th>
     </tr>
     <tr>
       <th>Tracking Number</th>
@@ -16,6 +16,8 @@
       <th>Vol.Weight</th>
       <th>Tot.Weight</th>
       <th>Fedex Weight</th>
+      <th>Overweight</th>
+      <th>Overweight R</th>
       <th>Error</th>
     </tr>
   </thead>
@@ -44,6 +46,12 @@
           <% end %>
 
           </td>
+
+          <% if label.parcel.overweight > 0 %>
+            <td align="right"><%= label.parcel.overweight %> <%= mass_um %></td>
+            <td align="right"><%= label.parcel.overweight_rounded %> <%= mass_um %></td>
+          <% end %>
+
           <td><%= label.parcel["fedex"]["error"] %></td>
         </tr>
       <% end %>

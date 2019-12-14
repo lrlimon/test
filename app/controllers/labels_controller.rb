@@ -66,6 +66,8 @@ class LabelsController < ApplicationController
         # ----------
         # Get Fedex info
         label.parcel["fedex"] = {}
+        label.parcel["overweight"] = nil
+        label.parcel["overweight_rounded"] = nil
 
         begin
           result = fedex.track(:tracking_number => label["tracking_number"])
@@ -96,6 +98,9 @@ class LabelsController < ApplicationController
 
             label.parcel["fedex"]["weight"] = label.parcel["fedex"]["weight"].ceil(4)
             label.parcel["fedex"]["error"] = ""
+
+            label.parcel["overweight"] = (label.parcel["fedex"]["weight"] - label.parcel["total_weight"]).ceil(4)
+            label.parcel["overweight_rounded"] = label.parcel["overweight"].ceil
           end
         end
 
