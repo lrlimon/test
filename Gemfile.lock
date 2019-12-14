@@ -58,9 +58,15 @@ GEM
       zeitwerk (~> 2.2)
     addressable (2.7.0)
       public_suffix (>= 2.0.2, < 5.0)
+    autoprefixer-rails (9.7.3)
+      execjs
     bindex (0.8.1)
     bootsnap (1.4.5)
       msgpack (~> 1.0)
+    bootstrap (4.3.1)
+      autoprefixer-rails (>= 9.1.0)
+      popper_js (>= 1.14.3, < 2)
+      sassc-rails (>= 2.0.0)
     builder (3.2.4)
     byebug (11.0.1)
     capybara (3.29.0)
@@ -75,10 +81,13 @@ GEM
     concurrent-ruby (1.1.5)
     crass (1.0.5)
     erubi (1.9.0)
+    execjs (2.7.0)
     fedex (3.10.11)
       httparty (>= 0.14.0)
       nokogiri (>= 1.5.6)
     ffi (1.11.3)
+    font_awesome5_rails (0.9.0)
+      railties (>= 4.2)
     globalid (0.4.2)
       activesupport (>= 4.2.0)
     httparty (0.17.1)
@@ -113,6 +122,7 @@ GEM
     nio4r (2.5.2)
     nokogiri (1.10.7)
       mini_portile2 (~> 2.4.0)
+    popper_js (1.14.5)
     public_suffix (4.0.1)
     puma (4.3.1)
       nio4r (~> 2.0)
@@ -212,9 +222,11 @@ PLATFORMS
 
 DEPENDENCIES
   bootsnap (>= 1.4.2)
+  bootstrap (~> 4.3.1)
   byebug
   capybara (>= 2.15)
   fedex
+  font_awesome5_rails
   jbuilder (~> 2.7)
   json
   listen (>= 3.0.5, < 3.2)
