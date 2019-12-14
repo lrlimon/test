@@ -9,7 +9,6 @@ class LabelsController < ApplicationController
     when "lb"
       return 0.454
 
-    # Exception
     else
       return 1
     end
@@ -19,6 +18,7 @@ class LabelsController < ApplicationController
     if only_errors == "false"
       source = "data/labels.json"
       labels = File.file?(source) ? JSON.parse(File.read(source), object_class: OpenStruct) : []
+      
     else
       labels = @@labels
     end
@@ -103,8 +103,6 @@ class LabelsController < ApplicationController
             label.parcel["overweight_rounded"] = label.parcel["overweight"].ceil
           end
         end
-
-        puts label.parcel["fedex"]
       end
     end
 
