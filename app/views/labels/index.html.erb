@@ -4,7 +4,7 @@
   <thead>
     <tr>
       <th colspan="2"></th>
-      <th colspan="5">Label</th>
+      <th colspan="8">Label</th>
     </tr>
     <tr>
       <th>Tracking Number</th>
@@ -16,6 +16,7 @@
       <th>Vol.Weight</th>
       <th>Tot.Weight</th>
       <th>Fedex Weight</th>
+      <th>Error</th>
     </tr>
   </thead>
 
@@ -35,7 +36,15 @@
           <td align="right"><%= label.parcel.weight_rounded %> <%= mass_um %></td>
           <td align="right"><%= label.parcel.volumetric_weight_rounded %> <%= mass_um %></td>
           <td align="right"><%= label.parcel.total_weight %> <%= mass_um %></td>
-          <td align="right"><%= label.parcel.fedex["weight"] %> <%= mass_um %></td>
+
+          <% if label.parcel.fedex.error == "" %>
+            <td align="right"><%= label.parcel.fedex.weight %> <%= mass_um %>
+          <% else %>
+            <td>
+          <% end %>
+
+          </td>
+          <td><%= label.parcel.fedex.error %></td>
         </tr>
       <% end %>
     <% else %>

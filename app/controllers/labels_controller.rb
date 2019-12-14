@@ -58,22 +58,41 @@ class LabelsController < ApplicationController
 
       # ----------
       # Get Fedex info
-      result = fedex.track(:tracking_number => label["tracking_number"])
       label.parcel["fedex"] = {}
 
-      if result != nil
-        track = result.first
+      begin
+        result = fedex.track(:tracking_number => label["tracking_number"])
 
-        label.parcel["fedex"] = {}
-        label.parcel["fedex"]["weight"] = track.details[:package_weight][:value].to_f
-        label.parcel["fedex"]["units"] = track.details[:package_weight][:units].downcase
+      rescue StandardError => e
+        puts e.message + " (on getting record for 'tracking number' = #{label["tracking_number"]})"
 
-        # Converts values if not "kg"
-        if label.parcel["fedex"]["units"] != "kg"
-          label.parcel["fedex"]["weight"] *= get_factor(label.parcel["fedex"]["units"])
-          label.parcel["fedex"]["units"] = "kg"
+        label.parcel["fedex"]["error"] = e.message
+
+      else
+        begin
+          track = result.first
+
+        rescue StandardError => e
+          puts e.message + " (on getting record info for 'tracking number' = #{label["tracking_number"]})"
+
+          label.parcel["fedex"]["error"] = e.message
+
+        else
+          label.parcel["fedex"]["weight"] = track.details[:package_weight][:value].to_f
+          label.parcel["fedex"]["units"] = track.details[:package_weight][:units].downcase
+
+          # Converts values if not "kg"
+          if label.parcel["fedex"]["units"] != "kg"
+            label.parcel["fedex"]["weight"] *= get_factor(label.parcel["fedex"]["units"])
+            label.parcel["fedex"]["units"] = "kg"
+          end
+
+          label.parcel["fedex"]["weight"] = label.parcel["fedex"]["weight"].ceil.to_f
+          label.parcel["fedex"]["error"] = ""
         end
       end
+
+      puts label.parcel["fedex"]
     end
 
     return labels
