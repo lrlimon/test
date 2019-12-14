@@ -1,0 +1,74 @@
+<h2>Labels Detail</h2>
+
+<table class="table table-hover table-sm">
+  <thead class="table-active">
+    <tr>
+      <th>Tracking Number</th>
+      <th>Carrier</th>
+      <th class="right">Length</th>
+      <th class="right">Width</th>
+      <th class="right">Height</th>
+      <th class="right">Weight</th>
+      <th class="right">Vol.Weight</th>
+      <th class="right">Tot.Weight</th>
+      <th class="right">Fedex Weight</th>
+      <th class="right">Overweight</th>
+      <th class="right">Overweight R</th>
+      <th class="center">Message</th>
+    </tr>
+  </thead>
+
+  <tbody>
+    <% if @labels %>
+      <% @labels.each do |label| %>
+
+        <% if label.parcel.overweight > 0 %>
+        <% cls = "table-light" %>
+        <% else %>
+        <% cls = "table-success" %>
+        <% end %>
+
+        <tr>
+          <td class="<%= cls %>"><%= label["tracking_number"] %></td>
+          <td class="<%= cls %>"><%= label["carrier"] %></td>
+
+          <% dist_um = label.parcel.distance_unit %>
+          <% mass_um = label.parcel.mass_unit %>
+
+          <td class="<%= cls %> right"><%= label.parcel.length %> <%= dist_um %></td>
+          <td class="<%= cls %> right"><%= label.parcel.width %> <%= dist_um %></td>
+          <td class="<%= cls %> right"><%= label.parcel.height %> <%= dist_um %></td>
+          <td class="<%= cls %> right"><%= label.parcel.weight %> <%= mass_um %></td>
+          <td class="<%= cls %> right"><%= label.parcel.volumetric_weight %> <%= mass_um %></td>
+          <td class="<%= cls %> right"><%= label.parcel.total_weight %> <%= mass_um %></td>
+
+          <% if label.parcel["fedex"]["error"] == "" %>
+            <td class="<%= cls %> right"><%= label.parcel["fedex"]["weight"] %> <%= mass_um %></td>
+
+            <% if label.parcel.overweight > 0 %>
+              <td class="<%= cls %> right"><%= label.parcel.overweight %> <%= mass_um %></td>
+              <td class="<%= cls %> right"><%= label.parcel.overweight_rounded %> <%= mass_um %></td>
+            <% else %>
+              <td colspan="2"></td>
+            <% end %>
+
+            <td class="<% if label.parcel.overweight > 0 %>table-warning center<% else %>table-light<% end %>">
+              <% if label.parcel.overweight > 0 %>Overweight!<% end %>
+            </td>
+          <% else %>
+            <td colspan="3"></td>
+            <td><%= label.parcel["fedex"]["error"] %></td>
+          <% end %>
+        </tr>
+      <% end %>
+    <% else %>
+      <tr>
+        <td>No records found!</td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>
+
+<%= link_to "Report", labels_report_path, class: "btn btn-success btn-sm" %>
+<%= link_to "Reload all", labels_detail_path(:reload => true), class: "btn btn-info btn-sm" %>
+<%= link_to "Reload only with error", labels_detail_path(:reload => true, :only_errors => true), class: "btn btn-info btn-sm" %>

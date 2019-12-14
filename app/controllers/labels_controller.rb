@@ -111,7 +111,7 @@ class LabelsController < ApplicationController
     return labels
   end
 
-  def index
+  def detail
     reload = params.key?(:reload) ? params[:reload] : "true"
 
     if reload == "true"
@@ -119,6 +119,10 @@ class LabelsController < ApplicationController
       @@labels = load_labels(only_errors)
     end
 
+    @labels = @@labels
+  end
+
+  def report
     @labels = @@labels
   end
 end
