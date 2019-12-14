@@ -47,7 +47,6 @@ class LabelsController < ApplicationController
 
         # Gets volumetric weight
         label.parcel["volumetric_weight"] = label.parcel["length"] * label.parcel["width"] * label.parcel["height"] / 5000.0
-        label.parcel["volumetric_weight_rounded"] = label.parcel["volumetric_weight"].ceil.to_f
 
         # Mass units and values
         label.parcel["mass_unit"].downcase!
@@ -58,11 +57,9 @@ class LabelsController < ApplicationController
           label.parcel["mass_unit"] = "kg"
         end
 
-        label.parcel["weight_rounded"] = label.parcel["weight"].ceil.to_f
-
         # Calculate total weight
-        label.parcel["total_weight"] = label.parcel["weight_rounded"] > label.parcel["volumetric_weight_rounded"] ? label.parcel["weight_rounded"]
-                                                                                                                  : label.parcel["volumetric_weight_rounded"]
+        label.parcel["total_weight"] = label.parcel["weight"] > label.parcel["volumetric_weight"] ? label.parcel["weight"]
+                                                                                                  : label.parcel["volumetric_weight"]
       end
 
       if only_errors == "false" || (only_errors == "true" && label.parcel["fedex"]["error"] != "")
@@ -97,7 +94,7 @@ class LabelsController < ApplicationController
               label.parcel["fedex"]["units"] = "kg"
             end
 
-            label.parcel["fedex"]["weight"] = label.parcel["fedex"]["weight"].ceil.to_f
+            label.parcel["fedex"]["weight"] = label.parcel["fedex"]["weight"].ceil(4)
             label.parcel["fedex"]["error"] = ""
           end
         end
