@@ -37,14 +37,14 @@
           <td align="right"><%= label.parcel.volumetric_weight_rounded %> <%= mass_um %></td>
           <td align="right"><%= label.parcel.total_weight %> <%= mass_um %></td>
 
-          <% if label.parcel.fedex.error == "" %>
-            <td align="right"><%= label.parcel.fedex.weight %> <%= mass_um %>
+          <% if label.parcel["fedex"]["error"] == "" %>
+            <td align="right"><%= label.parcel["fedex"]["weight"] %> <%= mass_um %>
           <% else %>
             <td>
           <% end %>
 
           </td>
-          <td><%= label.parcel.fedex.error %></td>
+          <td><%= label.parcel["fedex"]["error"] %></td>
         </tr>
       <% end %>
     <% else %>
@@ -54,3 +54,5 @@
     <% end %>
   </tbody>
 </table>
+
+<%= link_to "Reload", labels_path(:reload => true) %>

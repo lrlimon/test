@@ -1,4 +1,6 @@
 class LabelsController < ApplicationController
+  @@labels = nil
+
   def get_factor(um = nil)
     case um
     when "in"
@@ -99,6 +101,8 @@ class LabelsController < ApplicationController
   end
 
   def index
-    @labels = get_labels
+    reload = params.key?(:reload) ? params[:reload] : "true"
+    @@labels = get_labels if reload == "true"
+    @labels = @@labels
   end
 end
