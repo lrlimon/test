@@ -111,7 +111,7 @@ class LabelsController < ApplicationController
     return labels
   end
 
-  def detail
+  def input
     reload = params.key?(:reload) ? params[:reload] : "true"
 
     if reload == "true"
