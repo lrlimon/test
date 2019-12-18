@@ -14,20 +14,29 @@ class LabelsController < ApplicationController
     end
   end
 
+  def get_labels
+    source = "data/labels.json"
+
+    return File.file?(source) ? JSON.parse(File.read(source), object_class: OpenStruct) : []
+  end
+
+  def get_fedex_api
+    return Fedex::Shipment.new(:key            => 'O21wEWKhdDn2SYyb',
+                               :password       => 'db0SYxXWWh0bgRSN7Ikg9Vunz',
+                               :account_number => '510087780',
+                               :meter          => '119009727',
+                               :mode           => 'test')
+  end
+
   def load_labels(only_errors = "false")
     if only_errors == "false"
-      source = "data/labels.json"
-      labels = File.file?(source) ? JSON.parse(File.read(source), object_class: OpenStruct) : []
+      labels = get_labels
 
     else
       labels = @@labels
     end
 
-    fedex = Fedex::Shipment.new(:key            => 'O21wEWKhdDn2SYyb',
-                                :password       => 'db0SYxXWWh0bgRSN7Ikg9Vunz',
-                                :account_number => '510087780',
-                                :meter          => '119009727',
-                                :mode           => 'test')
+    fedex = get_fedex_api
 
     # Apply changes on data labels
     labels.each do |label|
